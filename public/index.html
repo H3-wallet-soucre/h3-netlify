@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H3 Wallet — Easy Wallet</title>
+<meta name="description" content="H3 Wallet. Send crypto without gas. Swap tokens. 12 blockchains. Simple, private, yours.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#09090b;--bg2:#111113;--gold:#c9a84c;--gold2:#b8923a;--text:#e4e4e7;--text-dim:#71717a;--radius:12px}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:#000;color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--gold);text-decoration:none}
+a:hover{color:#c9a84c}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(201,168,76,0.08)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:24px;letter-spacing:1px;color:#fff}
+.nav-logo img{height:44px;border-radius:6px}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:16px;font-weight:500;color:var(--text-dim);transition:color .2s}
+.nav-links a:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--gold);color:#000}
+.btn-primary:hover{background:#d4b055;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid rgba(201,168,76,0.3);color:var(--gold)}
+.btn-outline:hover{border-color:var(--gold);background:rgba(201,168,76,0.05)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative}
+
+.hero-content{max-width:720px;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:20px;background:rgba(201,168,76,0.08);border:2px solid rgba(201,168,76,0.3);font-size:15px;color:var(--gold);font-weight:500;margin-bottom:24px}
+.hero h1{font-size:clamp(40px,7vw,64px);font-weight:800;line-height:1.1;margin-bottom:20px;letter-spacing:-1px}
+.hero h1 span{color:var(--gold)}
+.hero p{font-size:18px;color:var(--text-dim);max-width:520px;margin:0 auto 36px}
+.hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-buttons .btn{padding:14px 32px;font-size:15px}
+
+/* FEATURES */
+.section{padding:100px 24px}
+.section-title{text-align:center;margin-bottom:60px}
+.section-title h2{font-size:clamp(32px,5vw,48px);font-weight:700;margin-bottom:12px}
+.section-title p{color:#fff;font-size:24px;max-width:560px;margin:0 auto}
+.features-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;max-width:960px;margin:0 auto}
+.feature-card{background:#0a0a0a;border:1px solid rgba(201,168,76,0.06);border-radius:var(--radius);padding:32px;transition:all .3s}
+.feature-card:hover{border-color:rgba(201,168,76,0.2);transform:translateY(-2px)}
+.feature-icon{width:44px;height:44px;border-radius:10px;background:rgba(201,168,76,0.08);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+.feature-card h3{font-size:17px;font-weight:600;margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--text-dim);line-height:1.5}
+
+/* CHAINS */
+.chains-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:800px;margin:0 auto}
+.chain-badge{display:flex;align-items:center;gap:8px;padding:16px 28px;border-radius:8px;background:#0a0a0a;border:1px solid rgba(255,255,255,0.04);font-size:18px;font-weight:500;transition:border-color .2s;min-width:190px;justify-content:center}
+.chain-badge:hover{border-color:rgba(201,168,76,0.2)}
+.chain-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;max-width:860px;margin:0 auto}
+.step{text-align:center;padding:24px}
+.step-num{width:40px;height:40px;border-radius:50%;background:var(--gold);color:#000;font-weight:700;font-size:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.step h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.step p{font-size:14px;color:var(--text-dim)}
+
+/* CTA */
+.cta{text-align:center;padding:100px 24px}
+.cta h2{font-size:clamp(28px,4vw,40px);font-weight:700;margin-bottom:16px}
+.cta p{color:var(--text-dim);font-size:16px;margin-bottom:32px;max-width:600px;margin-left:auto;margin-right:auto;white-space:nowrap;}
+.cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* CONTACT */
+.contact-section{max-width:480px;margin:0 auto}
+.contact-section h3{font-size:20px;font-weight:600;margin-bottom:20px;text-align:center}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--text-dim);margin-bottom:6px}
+.form-group input,.form-group textarea{width:100%;padding:12px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:#0a0a0a;color:var(--text);font-size:14px;font-family:inherit;transition:border-color .2s}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--gold)}
+.form-group textarea{min-height:120px;resize:vertical}
+.form-status{text-align:center;font-size:14px;margin-top:12px;min-height:20px}
+
+/* FOOTER */
+footer{border-top:1px solid rgba(255,255,255,0.04);padding:40px 24px;text-align:center}
+footer p{font-size:16px;color:var(--text-dim)}
+
+/* MOBILE */
+@media(max-width:640px){
+  nav{padding:12px 16px}
+  .nav-links a:not(.btn){display:none}
+  .hero-buttons{flex-direction:column;align-items:center}
+  .hero-buttons .btn{width:100%;max-width:280px;justify-content:center}
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-content{animation:fadeIn .8s ease}
+.section{animation:fadeIn .6s ease}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-links">
+    <a href="#features" id="navFeatures">Features</a>
+    <a href="#chains" id="navChains">Chains</a>
+    <a href="#how" id="navHow">How it works</a>
+    <a href="#contact" id="navContact">Contact</a>
+    
+  </div>
+  <style>
+.lang-switch{display:flex;gap:0;border:1px solid rgba(201,168,76,0.2);border-radius:6px;overflow:hidden;margin-left:12px}
+.lang-btn{padding:6px 10px;font-size:12px;font-weight:600;color:var(--text-dim);background:transparent;border:none;cursor:pointer;transition:all .2s}
+.lang-btn:hover{color:#fff}
+.lang-btn.active{background:#c9a84c;color:#000}
+  </style>
+  <div class="lang-switch">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" onclick="setLang('pt')">PT</button>
+    <button class="lang-btn" onclick="setLang('es')">ES</button>
+  </div>
+</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <img src="logo_h3.png" alt="H3" style="height:400px;width:auto;border-radius:0;margin-bottom:32px;display:block;margin-left:auto;margin-right:auto;">
+    <div class="hero-badge">Decentralized — Self-custody — Your keys, your funds</div>
+    <h2 style="font-size:56px;font-weight:700;color:#fff;margin-bottom:8px;">H3 Wallet</h2>
+    <h1>Crypto made <span>simple</span></h1>
+    <p>Send tokens without gas. Swap in one click. 12 blockchains, one wallet.</p>
+    <div class="hero-buttons">
+      <a href="#" id="dlMac"><img src="btn_mac.jpg" alt="Mac" style="height:64px;width:auto;border-radius:8px;"></a>
+      <a href="#" id="dlWin"><img src="btn_win.jpg" alt="Windows" style="height:64px;width:auto;border-radius:8px;"></a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-title">
+    <h2>Why H3</h2>
+    <p>Everything you need. Nothing you don't.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card" style="grid-column:span 3;min-height:220px;">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <h3>Easy Gas</h3>
+      <p>Envoyez vos cryptos sans vous soucier du gas.<br>Avec Easy Gas, H3 calcule les frais réseau et les prélève directement dans la crypto que vous envoyez.<br><br>Plus besoin de garder de l'ETH, du BNB, du TRX ou du SOL juste pour payer les frais.<br><br>Directement intégré dans la version Easy Wallet que vous trouverez sur votre dashboard.<br><br>Disponible sur Ethereum, BNB Chain, Tron et Solana.</p>
+    </div>
+<div class="feature-card" style="grid-column:span 3;min-height:220px;">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg></div>
+      <h3>Dark Send</h3>
+      <p>Envoyez vos cryptos en toute confidentialité.<br>Avec Dark Send, vous renforcez la confidentialité de vos transactions.<br><br>Vous envoyez votre crypto vers un destinataire et le passage confidentiel est géré automatiquement.<br><br>Une fonction pensée pour ceux qui veulent envoyer simplement, sans exposer inutilement leurs transactions, leur historique ou leur adresse de wallet sur la blockchain.</p>
+    </div>
+    <div class="feature-card" style="grid-column:span 2;">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+      <h3>Instant Swap</h3>
+      <p>Swap tokens across 12 blockchains in seconds. No account, no KYC.</p>
+    </div>
+    <div class="feature-card" style="grid-column:span 2;">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <h3>Self-Custody</h3>
+      <p>Your seed, your wallet. No server, no third party. Funds stay on your device.</p>
+    </div>
+    <div class="feature-card" style="grid-column:span 2;">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      <h3>Two Modes</h3>
+      <p>Easy Wallet for beginners. Pro mode for full control. Switch anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CHAINS -->
+<section class="section" id="chains">
+  <div class="section-title">
+    <h2>12 Blockchains</h2>
+    <p>All the major networks, one wallet.</p>
+  </div>
+  <div class="chains-row">
+    <div class="chain-badge"><span class="chain-dot"></span>Bitcoin</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Ethereum</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Solana</div>
+    <div class="chain-badge"><span class="chain-dot"></span>BNB Chain</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Tron</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Base</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Arbitrum</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Polygon</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Avalanche</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Optimism</div>
+    <div class="chain-badge"><span class="chain-dot"></span>Litecoin</div>
+    <div class="chain-badge"><span class="chain-dot"></span>XRP</div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-title">
+    <h2>How it works</h2>
+    <p>Three steps. That's it.</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Create your wallet</h3>
+      <p>One click. A unique seed phrase is generated. Write it down, keep it safe.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Add your tokens</h3>
+      <p>Search and add any token from 12 blockchains. Your balances load instantly.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Send & swap</h3>
+      <p>Transfer or swap tokens in seconds. No gas needed with Easy Gas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<!-- CONTACT -->
+<section class="section" id="contact">
+  <div class="section-title">
+    <h2>Contact</h2>
+    <p>Questions? We're here.</p>
+  </div>
+  <div class="contact-section">
+    <form id="contactForm">
+      <div class="form-group">
+        <label id="labelName">Name</label>
+        <input type="text" id="contactName" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label id="labelEmail">Email</label>
+        <input type="email" id="contactEmail" placeholder="your@email.com" required>
+      </div>
+      <div class="form-group">
+        <label id="labelMsg">Message</label>
+        <textarea id="contactMessage" placeholder="How can we help?" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Send</button>
+      <div id="formStatus" class="form-status"></div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p id="footerMain">H3 Wallet &copy; 2025. Decentralized — Self-custody — Your keys, your funds.</p>
+  <p id="footerOpen" style="margin-top:16px;font-size:14px;color:var(--text-dim);max-width:620px;margin-left:auto;margin-right:auto;">H3 rend son cœur wallet open source : création, chiffrement et signature locale.<br>Easy Gas et Dark Send restent propriétaires afin de protéger les solutions techniques.</p>
+  <p style="margin-top:16px;"><a href="#" id="footerGithub" style="color:#c9a84c;font-size:15px;font-weight:600;">GitHub</a></p>
+</footer>
+
+<script>
+var T = {
+  en: {
+    badge: 'Decentralized — Self-custody — Your keys, your funds',
+    h1: 'Crypto made <span>simple</span>',
+    h1p: 'Send tokens without gas. Swap in one click. 12 blockchains, one wallet.',
+    dlMac: 'Download for Mac',
+    dlWin: 'Download for Windows',
+    navF:'Features',navC:'Chains',navH:'How it works',navCo:'Contact',whyH3:'Why H3',
+    whyP: 'Everything you need. Nothing you don\'t.',
+    f1t: 'Easy Gas', f1p: 'Send your crypto without worrying about gas. Easy Gas calculates network fees and deducts them directly from the crypto you send. No need to hold ETH, BNB, TRX or SOL just for fees. Built into Easy Wallet mode. Available on Ethereum, BNB Chain, Tron and Solana.',
+    f2t: 'Instant Swap', f2p: 'Swap tokens across 12 blockchains in seconds. No account, no KYC.',
+    f3t: 'Self-Custody', f3p: 'Your seed, your wallet. No server, no third party. Funds stay on your device.',
+    f4t: 'Dark Send', f4p: 'Send your crypto privately. Dark Send strengthens the confidentiality of your transactions. You send your crypto to a recipient and the confidential routing is handled automatically. Designed for those who want to send simply, without unnecessarily exposing their transactions, history or wallet address on the blockchain.',
+    f5t: 'Two Modes', f5p: 'Easy Wallet for beginners. Pro mode for full control. Switch anytime.',
+    f6t: 'Desktop App', f6p: 'Native Mac and Windows apps. Fast, secure, no browser extensions.',
+    chainsH: '12 Blockchains', chainsP: 'All the major networks, one wallet.',
+    howH: 'How it works', howP: 'Three steps. That\'s it.',
+    s1t: 'Create your wallet', s1p: 'One click. A unique seed phrase is generated. Write it down, keep it safe. Or import your existing wallet with your 12 or 24-word seed phrase.',
+    s2t: 'Add your tokens', s2p: 'Search and add any token from 12 blockchains. Your balances load instantly on your dashboard.',
+    s3t: 'Send & swap', s3p: 'Transfer or swap tokens in seconds. No native token needed with Easy Gas.',
+    ctaH: 'Ready?', ctaP: 'Download H3 Wallet and take control of your crypto.',
+    contactH: 'Contact', contactP: 'Questions? A suggestion... We\'re here.',
+    cName: 'Name', cEmail: 'Email', cMsg: 'Message', cSend: 'Send', cPlaceholder: 'How can we help?',
+    cFill: 'Please fill all fields.', cSending: 'Sending...', cOk: 'Message sent!', cErr: 'Error. Try again.'
+  },
+  fr: {
+    badge: 'Décentralisé — Self-custody — Vos clés, vos fonds',
+    h1: 'La crypto <span>simplifiée</span>',
+    h1p: 'Envoyez votre crypto sans vous soucier du gas avec Easy Gas.',
+    dlMac: 'Télécharger pour Mac',
+    dlWin: 'Télécharger pour Windows',
+    navF:'Fonctionnalités',navC:'Blockchains',navH:'Comment ça marche',navCo:'Contact',whyH3:'Pourquoi H3', whyP: 'Tout ce qu\'il vous faut. Rien de plus.',
+    f1t: 'Easy Gas', f1p: 'Envoyez vos cryptos sans vous soucier du gas. Avec Easy Gas, H3 calcule les frais réseau et les prélève directement dans la crypto que vous envoyez. Plus besoin de garder de l\'ETH, du BNB, du TRX ou du SOL juste pour payer les frais. Directement intégré dans la version Easy Wallet. Disponible sur Ethereum, BNB Chain, Tron et Solana.',
+    f2t: 'Swap instantané', f2p: 'Échangez des tokens sur 12 blockchains en quelques secondes. Sans compte, sans KYC.',
+    f3t: 'Self-Custody', f3p: 'Votre seed, votre wallet. Pas de serveur, pas de tiers. Vos fonds restent sur votre appareil.',
+    f4t: 'Dark Send', f4p: 'Envoyez vos cryptos en toute confidentialité. Avec Dark Send, vous envoyez votre crypto en toute confidentialité vers le destinataire et tout est géré automatiquement. Pensée pour ceux qui veulent envoyer leur crypto sans exposer leurs transactions, leur historique ou leur adresse de wallet sur la blockchain.',
+    f5t: 'Deux modes', f5p: 'Easy Wallet pour les débutants. Mode Pro pour le contrôle total. Changez quand vous voulez.',
+    f6t: 'App desktop', f6p: 'Apps natives Mac et Windows. Rapides, sécurisées, sans extension navigateur.',
+    chainsH: '12 Blockchains', chainsP: 'Tous les réseaux majeurs, un seul wallet.',
+    howH: 'Comment ça marche', howP: 'Trois étapes. C\'est tout.',
+    s1t: 'Créez votre wallet', s1p: 'Un clic. Une seed phrase unique est générée. Notez-la, gardez-la safe. Ou importez votre ancien wallet avec votre seed phrase à 12 ou 24 mots.',
+    s2t: 'Ajoutez vos tokens', s2p: 'Cherchez et ajoutez n\'importe quel token sur les 12 blockchains. Vos soldes s\'affichent instantanément sur votre tableau de bord.',
+    s3t: 'Envoyez & échangez', s3p: 'Transférez ou échangez des tokens en quelques secondes. Pas besoin de token natif avec Easy Gas.',
+    ctaH: 'Prêt ?', ctaP: 'Téléchargez H3 Wallet et prenez le contrôle de votre crypto.',
+    contactH: 'Contact', contactP: 'Des questions ? Une suggestion ... On est là.',
+    cName: 'Nom', cEmail: 'Email', cMsg: 'Message', cSend: 'Envoyer', cPlaceholder: 'Comment peut-on vous aider ?',
+    cFill: 'Veuillez remplir tous les champs.', cSending: 'Envoi...', cOk: 'Message envoyé !', cErr: 'Erreur. Réessayez.'
+  },
+  pt: {
+    badge: 'Descentralizado — Self-custody — Suas chaves, seus fundos',
+    h1: 'Crypto <span>simplificada</span>',
+    h1p: 'Envie tokens sem gas. Troque em um clique. 12 blockchains, uma carteira.',
+    dlMac: 'Baixar para Mac',
+    dlWin: 'Baixar para Windows',
+    navF:'Funcionalidades',navC:'Blockchains',navH:'Como funciona',navCo:'Contato',whyH3:'Por que H3', whyP: 'Tudo que você precisa. Nada que não precise.',
+    f1t: 'Easy Gas', f1p: 'Envie sua crypto sem se preocupar com gas. O Easy Gas calcula as taxas de rede e as deduz diretamente da crypto que você envia. Sem precisar manter ETH, BNB, TRX ou SOL só para taxas. Integrado no modo Easy Wallet. Disponível em Ethereum, BNB Chain, Tron e Solana.',
+    f2t: 'Swap instantâneo', f2p: 'Troque tokens em 12 blockchains em segundos. Sem conta, sem KYC.',
+    f3t: 'Self-Custody', f3p: 'Sua seed, sua carteira. Sem servidor, sem terceiros. Seus fundos ficam no seu dispositivo.',
+    f4t: 'Dark Send', f4p: 'Envie sua crypto com total confidencialidade. Com o Dark Send, você fortalece a privacidade das suas transações. Você envia sua crypto para um destinatário e o roteamento confidencial é gerido automaticamente. Pensado para quem quer enviar de forma simples, sem expor transações, histórico ou endereço de carteira na blockchain.',
+    f5t: 'Dois modos', f5p: 'Easy Wallet para iniciantes. Modo Pro para controle total. Mude quando quiser.',
+    f6t: 'App desktop', f6p: 'Apps nativas Mac e Windows. Rápidas, seguras, sem extensão de navegador.',
+    chainsH: '12 Blockchains', chainsP: 'Todas as redes principais, uma carteira.',
+    howH: 'Como funciona', howP: 'Três passos. Só isso.',
+    s1t: 'Crie sua carteira', s1p: 'Um clique. Uma seed phrase única é gerada. Anote e guarde com segurança. Ou importe sua carteira existente com sua seed phrase de 12 ou 24 palavras.',
+    s2t: 'Adicione seus tokens', s2p: 'Busque e adicione qualquer token nas 12 blockchains. Seus saldos carregam instantaneamente no seu painel.',
+    s3t: 'Envie e troque', s3p: 'Transfira ou troque tokens em segundos. Sem necessidade de token nativo com Easy Gas.',
+    ctaH: 'Pronto?', ctaP: 'Baixe H3 Wallet e tome controle da sua crypto.',
+    contactH: 'Contato', contactP: 'Dúvidas? Uma sugestão... Estamos aqui.',
+    cName: 'Nome', cEmail: 'Email', cMsg: 'Mensagem', cSend: 'Enviar', cPlaceholder: 'Como podemos ajudar?',
+    cFill: 'Preencha todos os campos.', cSending: 'Enviando...', cOk: 'Mensagem enviada!', cErr: 'Erro. Tente novamente.'
+  },
+  es: {
+    badge: 'Descentralizado — Self-custody — Tus claves, tus fondos',
+    h1: 'Crypto <span>simplificada</span>',
+    h1p: 'Envía tokens sin gas. Intercambia en un clic. 12 blockchains, un wallet.',
+    dlMac: 'Descargar para Mac',
+    dlWin: 'Descargar para Windows',
+    navF:'Funcionalidades',navC:'Blockchains',navH:'Cómo funciona',navCo:'Contacto',whyH3:'Por qué H3', whyP: 'Todo lo que necesitas. Nada más.',
+    f1t: 'Easy Gas', f1p: 'Envía tu crypto sin preocuparte por el gas. Easy Gas calcula las tarifas de red y las deduce directamente de la crypto que envías. Sin necesidad de mantener ETH, BNB, TRX o SOL solo para tarifas. Integrado en el modo Easy Wallet. Disponible en Ethereum, BNB Chain, Tron y Solana.',
+    f2t: 'Swap instantáneo', f2p: 'Intercambia tokens en 12 blockchains en segundos. Sin cuenta, sin KYC.',
+    f3t: 'Self-Custody', f3p: 'Tu seed, tu wallet. Sin servidor, sin terceros. Tus fondos se quedan en tu dispositivo.',
+    f4t: 'Dark Send', f4p: 'Envía tu crypto con total confidencialidad. Con Dark Send, refuerzas la privacidad de tus transacciones. Envías tu crypto a un destinatario y el enrutamiento confidencial se gestiona automáticamente. Pensado para quienes quieren enviar de forma simple, sin exponer transacciones, historial o dirección de wallet en la blockchain.',
+    f5t: 'Dos modos', f5p: 'Easy Wallet para principiantes. Modo Pro para control total. Cambia cuando quieras.',
+    f6t: 'App desktop', f6p: 'Apps nativas Mac y Windows. Rápidas, seguras, sin extensión de navegador.',
+    chainsH: '12 Blockchains', chainsP: 'Todas las redes principales, un wallet.',
+    howH: 'Cómo funciona', howP: 'Tres pasos. Eso es todo.',
+    s1t: 'Crea tu wallet', s1p: 'Un clic. Se genera una seed phrase única. Anótala y guárdala. O importa tu wallet existente con tu seed phrase de 12 o 24 palabras.',
+    s2t: 'Añade tus tokens', s2p: 'Busca y añade cualquier token en las 12 blockchains. Tus saldos se cargan instantáneamente en tu panel.',
+    s3t: 'Envía e intercambia', s3p: 'Transfiere o intercambia tokens en segundos. Sin necesidad de token nativo con Easy Gas.',
+    ctaH: '¿Listo?', ctaP: 'Descarga H3 Wallet y toma el control de tu crypto.',
+    contactH: 'Contacto', contactP: '¿Preguntas? Una sugerencia... Estamos aquí.',
+    cName: 'Nombre', cEmail: 'Email', cMsg: 'Mensaje', cSend: 'Enviar', cPlaceholder: '¿Cómo podemos ayudar?',
+    cFill: 'Rellena todos los campos.', cSending: 'Enviando...', cOk: '¡Mensaje enviado!', cErr: 'Error. Intenta de nuevo.'
+  }
+};
+
+var currentLang = localStorage.getItem('h3_lang') || 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('h3_lang', lang);
+  var t = T[lang];
+  // Update all text elements
+  document.querySelector('.hero-badge').textContent = t.badge;
+  document.querySelector('.hero h1').innerHTML = t.h1;
+  document.querySelector('.hero p').textContent = t.h1p;
+  // Download buttons are images, no text update needed
+  // Nav
+  document.getElementById('navFeatures').textContent = t.navF;
+  document.getElementById('navChains').textContent = t.navC;
+  document.getElementById('navHow').textContent = t.navH;
+  document.getElementById('navContact').textContent = t.navCo;
+  // Features
+  document.querySelector('#features .section-title h2').style.display = 'none';
+  document.querySelector('#features .section-title p').textContent = t.whyP;
+  var cards = document.querySelectorAll('.feature-card');
+  var ft = [[t.f1t,t.f1p],[t.f4t,t.f4p],[t.f2t,t.f2p],[t.f3t,t.f3p],[t.f5t,t.f5p]];
+  cards.forEach(function(c,i){ if(ft[i]){c.querySelector('h3').textContent=ft[i][0];c.querySelector('p').textContent=ft[i][1];}});
+  // Chains
+  document.querySelector('#chains .section-title h2').style.display = 'none';
+  document.querySelector('#chains .section-title p').textContent = t.chainsP;
+  // How
+  document.querySelector('#how .section-title h2').style.display = 'none';
+  document.querySelector('#how .section-title p').textContent = t.howP;
+  var steps = document.querySelectorAll('.step');
+  var st = [[t.s1t,t.s1p],[t.s2t,t.s2p],[t.s3t,t.s3p]];
+  steps.forEach(function(s,i){ if(st[i]){s.querySelector('h3').textContent=st[i][0];s.querySelector('p').textContent=st[i][1];}});
+  // CTA
+  // CTA removed
+  // Contact
+  document.querySelector('#contact .section-title h2').textContent = t.contactH;
+  document.querySelector('#contact .section-title p').textContent = t.contactP;
+  document.getElementById('labelName').textContent = t.cName;
+  document.getElementById('labelEmail').textContent = t.cEmail;
+  document.getElementById('labelMsg').textContent = t.cMsg;
+  document.querySelector('#contactMessage').placeholder = t.cPlaceholder;
+  document.querySelector('#contactForm button').textContent = t.cSend;
+  // Footer
+  document.getElementById('footerMain').textContent = 'H3 Wallet © 2025. ' + t.badge;
+  // Lang buttons
+  document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelector('.lang-btn[onclick*="' + lang + '"]').classList.add('active');
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', function(){ setLang(currentLang); });
+if(document.readyState !== 'loading') setLang(currentLang);
+
+// Store translations for form status
+var formT = {en:{fill:'Please fill all fields.',sending:'Sending...',ok:'Message sent!',err:'Error. Try again.'},fr:{fill:'Veuillez remplir tous les champs.',sending:'Envoi...',ok:'Message envoyé !',err:'Erreur. Réessayez.'},pt:{fill:'Preencha todos os campos.',sending:'Enviando...',ok:'Mensagem enviada!',err:'Erro. Tente novamente.'},es:{fill:'Rellena todos los campos.',sending:'Enviando...',ok:'¡Mensaje enviado!',err:'Error. Intenta de nuevo.'}};
+
+
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var status = document.getElementById('formStatus');
+  var name = document.getElementById('contactName').value.trim();
+  var email = document.getElementById('contactEmail').value.trim();
+  var message = document.getElementById('contactMessage').value.trim();
+  if (!name || !email || !message) {
+    status.style.color = '#f59e0b';
+    status.textContent = (formT[currentLang]||formT.en).fill;;
+    return;
+  }
+  status.style.color = 'var(--gold)';
+  status.textContent = (formT[currentLang]||formT.en).sending;;
+  // TODO: replace with real worker URL
+  fetch('https://api.h3-wallet.com/support', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name: name, email: email, message: message, ts: Date.now()})
+  }).then(function(r) {
+    if (r.ok) {
+      status.style.color = '#22c55e';
+      status.textContent = (formT[currentLang]||formT.en).ok;;
+      document.getElementById('contactForm').reset();
+    } else {
+      status.style.color = '#ef4444';
+      status.textContent = (formT[currentLang]||formT.en).err;;
+    }
+  }).catch(function() {
+    status.style.color = '#ef4444';
+    status.textContent = (formT[currentLang]||formT.en).err;;
+  });
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    var target = document.querySelector(this.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+</body>
+</html>
