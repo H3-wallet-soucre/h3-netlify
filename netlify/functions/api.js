@@ -1,29 +1,5 @@
 // Netlify function - handles all API routes
-// Adapted from Cloudflare Worker h3-api
-
-// In-memory store (per cold start). For persistence, use Netlify KV or external DB.
-let feesCache = null;
-let supportMessages = [];
-
-function getFees() {
-  if (!feesCache) {
-    feesCache = {
-      "ethereum": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-      "bnb": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
-      "tron": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.99},
-      "solana": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
-      "bitcoin": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
-      "xrp": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
-      "litecoin": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
-      "polygon": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-      "arbitrum": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-      "optimism": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-      "avalanche": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-      "base": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99}
-    };
-  }
-  return feesCache;
-}
+// Uses Netlify Blobs for persistent storage
 
 function jsonResponse(data, status) {
   return new Response(JSON.stringify(data), {
@@ -50,17 +26,6 @@ var API_KEYS = {
   changenow: process.env.CHANGENOW_KEY || 'e3c6b3c6fadade49f5b646d8b547b164c4bbc09ee1430211a0485eb6d3edd4ba'
 };
 
-// EVM chain RPC mapping
-var CHAIN_RPC = {
-  ethereum: 'https://eth.llamarpc.com',
-  bnb: 'https://bsc-dataseed.binance.org',
-  polygon: 'https://polygon-rpc.com',
-  arbitrum: 'https://arb1.arbitrum.io/rpc',
-  optimism: 'https://mainnet.optimism.io',
-  avalanche: 'https://api.avax.network/ext/bc/C/rpc',
-  base: 'https://mainnet.base.org'
-};
-
 var CHAIN_EXPLORER = {
   ethereum: 'https://api.etherscan.io',
   bnb: 'https://api.bscscan.com',
@@ -71,9 +36,35 @@ var CHAIN_EXPLORER = {
   base: 'https://api.basescan.org'
 };
 
-async function handleRequest(request, url, path) {
+async function getFees(store) {
+  var stored = await store.get('fee_config', { type: 'json' });
+  if (stored) return stored;
+  var defaults = {
+    "ethereum": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
+    "bnb": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
+    "tron": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.99},
+    "solana": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
+    "bitcoin": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
+    "xrp": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
+    "litecoin": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
+    "polygon": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
+    "arbitrum": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
+    "optimism": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
+    "avalanche": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
+    "base": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99}
+  };
+  await store.setJSON('fee_config', defaults);
+  return defaults;
+}
+
+async function getMessages(store) {
+  var stored = await store.get('support_messages', { type: 'json' });
+  return stored || [];
+}
+
+async function handleRequest(req, url, path, store) {
   // CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders() });
   }
 
@@ -82,37 +73,42 @@ async function handleRequest(request, url, path) {
     return jsonResponse({ status: 'ok', version: '3.0.0', platform: 'netlify' });
   }
 
-  // Fee config
+  // Fee config (persistent)
   if (path === '/fee_config.json') {
-    return jsonResponse(getFees());
+    var fees = await getFees(store);
+    return jsonResponse(fees);
   }
 
-  // Save fees (admin)
-  if (path === '/save-fees' && request.method === 'POST') {
+  // Save fees (admin) - persistent
+  if (path === '/save-fees' && req.method === 'POST') {
     try {
-      feesCache = await request.json();
+      var fees = await req.json();
+      await store.setJSON('fee_config', fees);
       return jsonResponse({ success: true });
     } catch(e) { return jsonResponse({ success: false, error: 'Invalid data' }, 400); }
   }
 
-  // Support contact form
-  if (path === '/support' && request.method === 'POST') {
+  // Support contact form - persistent
+  if (path === '/support' && req.method === 'POST') {
     try {
-      var data = await request.json();
+      var data = await req.json();
       var msg = {
         name: (data.name || '').substring(0, 100),
         email: (data.email || '').substring(0, 200),
         message: (data.message || '').substring(0, 2000),
         timestamp: Date.now()
       };
-      supportMessages.push(msg);
+      var msgs = await getMessages(store);
+      msgs.push(msg);
+      await store.setJSON('support_messages', msgs);
       return jsonResponse({ success: true });
     } catch(e) { return jsonResponse({ success: false, error: 'Invalid data' }, 400); }
   }
 
-  // Get support messages (admin)
+  // Get support messages (admin) - persistent
   if (path === '/support-messages') {
-    return jsonResponse(supportMessages);
+    var msgs = await getMessages(store);
+    return jsonResponse(msgs);
   }
 
   // Prices (CoinGecko)
@@ -131,10 +127,8 @@ async function handleRequest(request, url, path) {
     var action = url.searchParams.get('action');
     var address = url.searchParams.get('address');
     if (!chain || !address) return jsonResponse({ error: 'Missing params' }, 400);
-    
     var baseUrl = CHAIN_EXPLORER[chain];
     if (!baseUrl) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    
     var apiUrl = baseUrl + '/api?module=account&action=' + action + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
     var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
     return new Response(await resp.text(), { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
@@ -146,18 +140,15 @@ async function handleRequest(request, url, path) {
     var address = url.searchParams.get('address');
     var contract = url.searchParams.get('contract');
     if (!chain || !address || !contract) return jsonResponse({ error: 'Missing params' }, 400);
-    
     var baseUrl = CHAIN_EXPLORER[chain];
     if (!baseUrl) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    
     var apiUrl = baseUrl + '/api?module=account&action=tokenbalance&contractaddress=' + contract + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
     var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
     var d = await resp.json();
     if (d.status === '1' && d.result) {
-      // Find decimals for token
       var tokenDecimals = 18;
-      if (contract.toLowerCase() === '0xdac17f958d2ee523a2206206994597c13d831ec7') tokenDecimals = 6; // USDT ETH
-      if (contract.toLowerCase() === '0x55d398326f99059ff775485246999027b3197955') tokenDecimals = 18; // USDT BNB
+      if (contract.toLowerCase() === '0xdac17f958d2ee523a2206206994597c13d831ec7') tokenDecimals = 6;
+      if (contract.toLowerCase() === '0x55d398326f99059ff775485246999027b3197955') tokenDecimals = 18;
       return jsonResponse({ success: true, balance: parseFloat(d.result) / Math.pow(10, tokenDecimals) });
     }
     return jsonResponse({ success: false, balance: 0 });
@@ -166,20 +157,20 @@ async function handleRequest(request, url, path) {
   // Gas price
   if (path === '/gas') {
     var chain = url.searchParams.get('chain');
-    var type = url.searchParams.get('type');
-    if (!chain) return jsonResponse({ error: 'Missing chain' }, 400);
-    
+    var CHAIN_RPC = {
+      ethereum: 'https://eth.llamarpc.com', bnb: 'https://bsc-dataseed.binance.org',
+      polygon: 'https://polygon-rpc.com', arbitrum: 'https://arb1.arbitrum.io/rpc',
+      optimism: 'https://mainnet.optimism.io', avalanche: 'https://api.avax.network/ext/bc/C/rpc',
+      base: 'https://mainnet.base.org'
+    };
     var rpc = CHAIN_RPC[chain];
     if (!rpc) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    
     var resp = await fetch(rpc, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_gasPrice', params: [] })
     });
     var d = await resp.json();
-    var gasPrice = d.result ? parseInt(d.result, 16) / 1e9 : 0;
-    return jsonResponse({ success: true, gasPrice: gasPrice });
+    return jsonResponse({ success: true, gasPrice: d.result ? parseInt(d.result, 16) / 1e9 : 0 });
   }
 
   // Solana balance
@@ -188,13 +179,11 @@ async function handleRequest(request, url, path) {
     if (!address) return jsonResponse({ error: 'Missing address' }, 400);
     try {
       var resp = await fetch('https://api.mainnet-beta.solana.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [address] })
       });
       var d = await resp.json();
-      var balance = (d.result && d.result.value) ? d.result.value / 1e9 : 0;
-      return jsonResponse({ success: true, balance: balance });
+      return jsonResponse({ success: true, balance: (d.result && d.result.value) ? d.result.value / 1e9 : 0 });
     } catch(e) { return jsonResponse({ success: false, balance: 0 }); }
   }
 
@@ -204,22 +193,13 @@ async function handleRequest(request, url, path) {
     if (!address) return jsonResponse({ error: 'Missing address' }, 400);
     try {
       var resp = await fetch('https://api.mainnet-beta.solana.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0', id: 1, method: 'getTokenAccountsByOwner',
-          params: [address, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' }, { encoding: 'jsonParsed' }]
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getTokenAccountsByOwner', params: [address, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' }, { encoding: 'jsonParsed' }] })
       });
       var d = await resp.json();
       var tokens = [];
       if (d.result && d.result.value) {
-        d.result.value.forEach(function(t) {
-          tokens.push({
-            mint: t.account.data.parsed.info.mint,
-            balance: t.account.data.parsed.info.tokenAmount.uiAmount
-          });
-        });
+        d.result.value.forEach(function(t) { tokens.push({ mint: t.account.data.parsed.info.mint, balance: t.account.data.parsed.info.tokenAmount.uiAmount }); });
       }
       return jsonResponse({ success: true, tokens: tokens });
     } catch(e) { return jsonResponse({ success: false, tokens: [] }); }
@@ -228,56 +208,34 @@ async function handleRequest(request, url, path) {
   // Litecoin balance
   if (path === '/litecoin-balance') {
     var address = url.searchParams.get('address');
-    if (!address) return jsonResponse({ error: 'Missing address' }, 400);
     try {
       var resp = await fetch('https://litecoinspace.org/api/address/' + address + '/utxo');
       var utxos = await resp.json();
-      var balance = utxos.reduce(function(sum, u) { return sum + u.value; }, 0) / 1e8;
-      return jsonResponse({ success: true, balance: balance });
+      return jsonResponse({ success: true, balance: utxos.reduce(function(s,u){return s+u.value},0) / 1e8 });
     } catch(e) { return jsonResponse({ success: false, balance: 0 }); }
   }
 
   // XRP balance
   if (path === '/xrp-balance') {
     var address = url.searchParams.get('address');
-    if (!address) return jsonResponse({ error: 'Missing address' }, 400);
     try {
       var resp = await fetch('https://xrplcluster.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: 'account_info', params: [{ account: address, ledger_index: 'validated' }] })
       });
       var d = await resp.json();
-      var balance = d.result && d.result.account_data ? parseFloat(d.result.account_data.Balance) / 1e6 : 0;
-      return jsonResponse({ success: true, balance: balance });
+      return jsonResponse({ success: true, balance: d.result && d.result.account_data ? parseFloat(d.result.account_data.Balance) / 1e6 : 0 });
     } catch(e) { return jsonResponse({ success: false, balance: 0 }); }
-  }
-
-  // Easy Gas (EVM) - simplified placeholder
-  if (path === '/easy-gas' && request.method === 'POST') {
-    return jsonResponse({ success: false, error: 'Easy Gas requires relayer keys - configure via env vars' });
-  }
-
-  // Easy Gas Tron
-  if (path === '/easy-gas-tron' && request.method === 'POST') {
-    return jsonResponse({ success: false, error: 'Easy Gas Tron requires relayer keys - configure via env vars' });
-  }
-
-  // Easy Gas Solana
-  if (path === '/easy-gas-solana' && request.method === 'POST') {
-    return jsonResponse({ success: false, error: 'Easy Gas Solana requires relayer keys - configure via env vars' });
   }
 
   return jsonResponse({ error: 'Not found' }, 404);
 }
 
-export default async function handler(req) {
+export default async function handler(req, context) {
   var url = new URL(req.url);
-  // Netlify functions get the full URL, we need to extract the path after /api/
   var path = url.pathname.replace(/^\/api/, '') || '/';
-  return await handleRequest(req, url, path);
+  var store = context.platformContext?.blobs?.defaultStore;
+  return await handleRequest(req, url, path, store);
 }
 
-export const config = {
-  path: "/api/*"
-};
+export const config = { path: "/api/*" };
