@@ -1,8 +1,4 @@
-import adminHtml from './admin-html.js';
-
 export default async function handler(req) {
-  var url = new URL(req.url);
-  
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': '*',
@@ -10,6 +6,9 @@ export default async function handler(req) {
       'Access-Control-Allow-Headers': 'Content-Type'
     }});
   }
+
+  // Inline admin HTML
+  const adminHtml = await import('./admin-html.js').then(m => m.default);
 
   return new Response(adminHtml, {
     headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache, no-store' }
