@@ -420,7 +420,7 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
   status.style.color = 'var(--gold)';
   status.textContent = (formT[currentLang]||formT.en).sending;;
   // TODO: replace with real worker URL
-  fetch('https://api.h3-wallet.com/support', {
+  fetch('/api/support', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({name: name, email: email, message: message, ts: Date.now()})
