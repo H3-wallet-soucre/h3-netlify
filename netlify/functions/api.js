@@ -228,6 +228,46 @@ async function handleRequest(req, url, path, store) {
     } catch(e) { return jsonResponse({ success: false, balance: 0 }); }
   }
 
+  // Delegate TRX to Energy (admin)
+  if (path === '/delegate-trx-energy' && req.method === 'POST') {
+    try {
+      var TronWeb = (await import('tronweb')).default;
+      var pk = process.env.TRON_PRIVATE_KEY;
+      if (!pk) return jsonResponse({ error: 'No TRON private key configured' }, 500);
+      var tw = new TronWeb({ fullHost: 'https://api.trongrid.io', privateKey: pk });
+      var addr = tw.address.fromPrivateKey(pk);
+      var balance = await tw.trx.getBalance(addr);
+      var balanceTrx = Math.floor(balance / 1e6);
+      // Keep 100 TRX for fees, delegate the rest
+      var toDelegate = Math.max(0, balanceTrx - 100);
+      if (toDelegate < 1) return jsonResponse({ error: 'Not enough TRX. Balance: ' + balanceTrx + ' TRX (min 101 needed)' });
+      var result = await tw.transactionBuilder.freezeBalanceV2(toDelegate * 1e6, 'ENERGY', addr);
+      var signed = await tw.trx.sign(result, pk);
+      var broadcast = await tw.trx.sendRawTransaction(signed);
+      return jsonResponse({ success: true, delegated: toDelegate + ' TRX', txid: broadcast.txid, balance: balanceTrx });
+    } catch(e) { return jsonResponse({ error: 'Delegation failed: ' + e.message }, 500); }
+  }
+
+  // Get TRX balance + energy info (admin)
+  if (path === '/tron-relayer-info') {
+    try {
+      var TronWeb2 = (await import('tronweb')).default;
+      var pk2 = process.env.TRON_PRIVATE_KEY;
+      if (!pk2) return jsonResponse({ error: 'No TRON private key' }, 500);
+      var tw2 = new TronWeb2({ fullHost: 'https://api.trongrid.io' });
+      var addr2 = tw2.address.fromPrivateKey(pk2);
+      var bal = await tw2.trx.getBalance(addr2);
+      var resources = await tw2.trx.getAccountResources(addr2);
+      return jsonResponse({
+        address: addr2,
+        balanceTrx: Math.floor(bal / 1e6),
+        energyLimit: resources.EnergyLimit || 0,
+        energyUsed: resources.EnergyUsed || 0,
+        netLimit: resources.NetLimit || 0
+      });
+    } catch(e) { return jsonResponse({ error: e.message }, 500); }
+  }
+
   return jsonResponse({ error: 'Not found' }, 404);
 }
 
