@@ -147,14 +147,12 @@ footer p{font-size:16px;color:var(--text-dim)}
     <div class="feature-card" style="grid-column:span 3;min-height:220px;">
       <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
       <h3>Easy Gas</h3>
-      <p style="color:#fff;font-size:16px;font-weight:600;">Envoyez vos cryptos sans vous soucier du gas.</p>
-      <p style="margin-top:12px;">Avec Easy Gas, H3 calcule les frais réseau et les prélève directement dans la crypto que vous envoyez.<br><br>Plus besoin de garder de l'ETH, du BNB, du TRX ou du SOL juste pour payer les frais.<br><br>Directement intégré dans la version Easy Wallet que vous trouverez sur votre dashboard.<br><br>Disponible sur Ethereum, BNB Chain, Tron et Solana.</p>
+      <p>Envoyez vos cryptos sans vous soucier du gas. Avec Easy Gas, H3 calcule les frais réseau et les prélève directement dans la crypto que vous envoyez.<br><br>Plus besoin de garder de l'ETH, du BNB, du TRX ou du SOL juste pour payer les frais.<br><br>Directement intégré dans la version Easy Wallet que vous trouverez sur votre dashboard.<br><br>Disponible sur Ethereum, BNB Chain, Tron et Solana.</p>
     </div>
 <div class="feature-card" style="grid-column:span 3;min-height:220px;">
       <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg></div>
       <h3>Dark Send</h3>
-      <p style="color:#fff;font-size:16px;font-weight:600;">Envoyez vos cryptos en toute confidentialité.</p>
-      <p style="margin-top:12px;">Avec Dark Send, vous renforcez la confidentialité de vos transactions.<br><br>Vous envoyez votre crypto vers un destinataire et le passage confidentiel est géré automatiquement.<br><br>Une fonction pensée pour ceux qui veulent envoyer simplement, sans exposer inutilement leurs transactions, leur historique ou leur adresse de wallet sur la blockchain.</p>
+      <p>Envoyez vos cryptos en toute confidentialité. Avec Dark Send, vous renforcez la confidentialité de vos transactions.<br><br>Vous envoyez votre crypto vers un destinataire et le passage confidentiel est géré automatiquement.<br><br>Une fonction pensée pour ceux qui veulent envoyer simplement, sans exposer inutilement leurs transactions, leur historique ou leur adresse de wallet sur la blockchain.</p>
     </div>
     <div class="feature-card" style="grid-column:span 2;">
       <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
@@ -373,7 +371,17 @@ function setLang(lang) {
   document.querySelector('#features .section-title p').textContent = t.whyP;
   var cards = document.querySelectorAll('.feature-card');
   var ft = [[t.f1t,t.f1p],[t.f4t,t.f4p],[t.f2t,t.f2p],[t.f3t,t.f3p],[t.f5t,t.f5p]];
-  cards.forEach(function(c,i){ if(ft[i]){c.querySelector('h3').textContent=ft[i][0];c.querySelector('p').textContent=ft[i][1];}});
+  cards.forEach(function(c,i){ if(ft[i]){
+    c.querySelector('h3').textContent=ft[i][0];
+    // First sentence in white/bold for feature cards 0 (Easy Gas) and 1 (Dark Send)
+    if(i===0||i===1){
+      var parts=ft[i][1].split('. ');
+      var first=parts.shift();
+      c.querySelector('p').innerHTML='<span style="color:#fff;font-weight:600;">'+first+'.</span><br><br>'+parts.join('. ');
+    } else {
+      c.querySelector('p').textContent=ft[i][1];
+    }
+  }});
   // Chains
   document.querySelector('#chains .section-title h2').style.display = 'none';
   document.querySelector('#chains .section-title p').textContent = t.chainsP;
