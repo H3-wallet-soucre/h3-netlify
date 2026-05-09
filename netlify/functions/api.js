@@ -47,11 +47,11 @@ async function getFees(store) {
     "bitcoin": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
     "xrp": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
     "litecoin": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0},
-    "polygon": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-    "arbitrum": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-    "optimism": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-    "avalanche": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99},
-    "base": {"e":0,"sw":0,"fh":1,"fm":1,"eg":2.99}
+    "polygon": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
+    "arbitrum": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
+    "optimism": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
+    "avalanche": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79},
+    "base": {"e":0,"sw":0,"fh":1,"fm":1,"eg":0.79}
   };
   await store.setJSON('fee_config', defaults);
   return defaults;
