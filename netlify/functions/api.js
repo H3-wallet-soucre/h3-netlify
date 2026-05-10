@@ -35,6 +35,15 @@ var CHAIN_EXPLORER = {
   avalanche: { url: 'https://api.snowtrace.io', chainid: '43114' },
   base: { url: 'https://api.basescan.org', chainid: '8453' }
 };
+var CHAIN_RPC = {
+  ethereum: 'https://eth.llamarpc.com',
+  bnb: 'https://bsc-dataseed.binance.org/',
+  polygon: 'https://polygon-rpc.com',
+  arbitrum: 'https://arb1.arbitrum.io/rpc',
+  optimism: 'https://mainnet.optimism.io',
+  avalanche: 'https://api.avax.network/ext/bc/C/rpc',
+  base: 'https://mainnet.base.org'
+};
 
 async function getFees(store) {
   var stored = await store.get('fee_config', { type: 'json' });
