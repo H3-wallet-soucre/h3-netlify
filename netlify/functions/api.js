@@ -38,7 +38,7 @@ var CHAIN_EXPLORER = {
 var CHAIN_RPC = {
   ethereum: 'https://ethereum-rpc.publicnode.com',
   bnb: 'https://bsc-dataseed.binance.org/',
-  polygon: 'https://polygon-rpc.com',
+  polygon: 'https://polygon-bor-rpc.publicnode.com',
   arbitrum: 'https://arb1.arbitrum.io/rpc',
   optimism: 'https://mainnet.optimism.io',
   avalanche: 'https://api.avax.network/ext/bc/C/rpc',
