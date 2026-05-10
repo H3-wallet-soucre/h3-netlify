@@ -27,13 +27,13 @@ var API_KEYS = {
 };
 
 var CHAIN_EXPLORER = {
-  ethereum: { url: 'https://api.etherscan.io', chainid: '1' },
-  bnb: { url: 'https://api.bscscan.com', chainid: '56' },
-  polygon: { url: 'https://api.polygonscan.com', chainid: '137' },
-  arbitrum: { url: 'https://api.arbiscan.io', chainid: '42161' },
-  optimism: { url: 'https://api-optimistic.etherscan.io', chainid: '10' },
-  avalanche: { url: 'https://api.snowtrace.io', chainid: '43114' },
-  base: { url: 'https://api.basescan.org', chainid: '8453' }
+  ethereum: { url: 'https://api.etherscan.io', chainid: '1', v2: true },
+  bnb: { url: 'https://api.bscscan.com', chainid: '56', v2: false },
+  polygon: { url: 'https://api.polygonscan.com', chainid: '137', v2: false },
+  arbitrum: { url: 'https://api.arbiscan.io', chainid: '42161', v2: false },
+  optimism: { url: 'https://api-optimistic.etherscan.io', chainid: '10', v2: false },
+  avalanche: { url: 'https://api.snowtrace.io', chainid: '43114', v2: false },
+  base: { url: 'https://api.basescan.org', chainid: '8453', v2: false }
 };
 
 async function getFees(store) {
@@ -129,7 +129,9 @@ async function handleRequest(req, url, path, store) {
     if (!chain || !address) return jsonResponse({ error: 'Missing params' }, 400);
     var chainInfo = CHAIN_EXPLORER[chain];
     if (!chainInfo) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    var apiUrl = chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=' + action + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
+    var apiUrl = chainInfo.v2
+      ? chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=' + action + '&address=' + address + '&apikey=' + API_KEYS.etherscan
+      : chainInfo.url + '/api?module=account&action=' + action + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
     var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
     return new Response(await resp.text(), { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
   }
@@ -142,7 +144,9 @@ async function handleRequest(req, url, path, store) {
     if (!chain || !address || !contract) return jsonResponse({ error: 'Missing params' }, 400);
     var chainInfo = CHAIN_EXPLORER[chain];
     if (!chainInfo) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    var apiUrl = chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=tokenbalance&contractaddress=' + contract + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
+    var apiUrl = chainInfo.v2
+      ? chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=tokenbalance&contractaddress=' + contract + '&address=' + address + '&apikey=' + API_KEYS.etherscan
+      : chainInfo.url + '/api?module=account&action=tokenbalance&contractaddress=' + contract + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
     var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
     var d = await resp.json();
     if (d.status === '1' && d.result) {
