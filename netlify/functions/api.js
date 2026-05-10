@@ -36,7 +36,7 @@ var CHAIN_EXPLORER = {
   base: { url: 'https://api.basescan.org', chainid: '8453' }
 };
 var CHAIN_RPC = {
-  ethereum: 'https://eth.llamarpc.com',
+  ethereum: 'https://ethereum-rpc.publicnode.com',
   bnb: 'https://bsc-dataseed.binance.org/',
   polygon: 'https://polygon-rpc.com',
   arbitrum: 'https://arb1.arbitrum.io/rpc',
