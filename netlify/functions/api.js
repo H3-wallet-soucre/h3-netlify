@@ -27,13 +27,13 @@ var API_KEYS = {
 };
 
 var CHAIN_EXPLORER = {
-  ethereum: 'https://api.etherscan.io',
-  bnb: 'https://api.bscscan.com',
-  polygon: 'https://api.polygonscan.com',
-  arbitrum: 'https://api.arbiscan.io',
-  optimism: 'https://api-optimistic.etherscan.io',
-  avalanche: 'https://api.snowtrace.io',
-  base: 'https://api.basescan.org'
+  ethereum: { url: 'https://api.etherscan.io', chainid: '1' },
+  bnb: { url: 'https://api.bscscan.com', chainid: '56' },
+  polygon: { url: 'https://api.polygonscan.com', chainid: '137' },
+  arbitrum: { url: 'https://api.arbiscan.io', chainid: '42161' },
+  optimism: { url: 'https://api-optimistic.etherscan.io', chainid: '10' },
+  avalanche: { url: 'https://api.snowtrace.io', chainid: '43114' },
+  base: { url: 'https://api.basescan.org', chainid: '8453' }
 };
 
 async function getFees(store) {
@@ -127,9 +127,9 @@ async function handleRequest(req, url, path, store) {
     var action = url.searchParams.get('action');
     var address = url.searchParams.get('address');
     if (!chain || !address) return jsonResponse({ error: 'Missing params' }, 400);
-    var baseUrl = CHAIN_EXPLORER[chain];
-    if (!baseUrl) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    var apiUrl = baseUrl + '/api?module=account&action=' + action + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
+    var chainInfo = CHAIN_EXPLORER[chain];
+    if (!chainInfo) return jsonResponse({ error: 'Unsupported chain' }, 400);
+    var apiUrl = chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=' + action + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
     var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
     return new Response(await resp.text(), { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
   }
@@ -140,9 +140,9 @@ async function handleRequest(req, url, path, store) {
     var address = url.searchParams.get('address');
     var contract = url.searchParams.get('contract');
     if (!chain || !address || !contract) return jsonResponse({ error: 'Missing params' }, 400);
-    var baseUrl = CHAIN_EXPLORER[chain];
-    if (!baseUrl) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    var apiUrl = baseUrl + '/api?module=account&action=tokenbalance&contractaddress=' + contract + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
+    var chainInfo = CHAIN_EXPLORER[chain];
+    if (!chainInfo) return jsonResponse({ error: 'Unsupported chain' }, 400);
+    var apiUrl = chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=tokenbalance&contractaddress=' + contract + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
     var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
     var d = await resp.json();
     if (d.status === '1' && d.result) {
