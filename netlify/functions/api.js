@@ -127,11 +127,14 @@ async function handleRequest(req, url, path, store) {
     var action = url.searchParams.get('action');
     var address = url.searchParams.get('address');
     if (!chain || !address) return jsonResponse({ error: 'Missing params' }, 400);
-    var chainInfo = CHAIN_EXPLORER[chain];
-    if (!chainInfo) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    var apiUrl = chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=' + action + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
-    var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
-    return new Response(await resp.text(), { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
+    var rpcUrl = CHAIN_RPC[chain];
+    if (!rpcUrl) return jsonResponse({ error: 'Unsupported chain' }, 400);
+    if (action === 'balance') {
+      var rpcResp = await fetch(rpcUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_getBalance', params: [address, 'latest'], id: 1 }) });
+      var rpcData = await rpcResp.json();
+      return jsonResponse({ status: '1', message: 'OK', result: rpcData.result });
+    }
+    return jsonResponse({ error: 'Action not supported' }, 400);
   }
 
   // Token balance (EVM)
@@ -140,16 +143,18 @@ async function handleRequest(req, url, path, store) {
     var address = url.searchParams.get('address');
     var contract = url.searchParams.get('contract');
     if (!chain || !address || !contract) return jsonResponse({ error: 'Missing params' }, 400);
-    var chainInfo = CHAIN_EXPLORER[chain];
-    if (!chainInfo) return jsonResponse({ error: 'Unsupported chain' }, 400);
-    var apiUrl = chainInfo.url + '/v2/api?chainid=' + chainInfo.chainid + '&module=account&action=tokenbalance&contractaddress=' + contract + '&address=' + address + '&apikey=' + API_KEYS.etherscan;
-    var resp = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'H3-Wallet/1.0' } });
-    var d = await resp.json();
-    if (d.status === '1' && d.result) {
+    var rpcUrl = CHAIN_RPC[chain];
+    if (!rpcUrl) return jsonResponse({ error: 'Unsupported chain' }, 400);
+    var paddedAddr = address.toLowerCase().replace('0x', '').padStart(64, '0');
+    var callData = '0x70a08231' + paddedAddr;
+    var rpcResp = await fetch(rpcUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_call', params: [{ to: contract, data: callData }, 'latest'], id: 1 }) });
+    var rpcData = await rpcResp.json();
+    var balHex = rpcData.result || '0x0';
+    if (balHex && balHex !== '0x') {
       var tokenDecimals = 18;
       if (contract.toLowerCase() === '0xdac17f958d2ee523a2206206994597c13d831ec7') tokenDecimals = 6;
       if (contract.toLowerCase() === '0x55d398326f99059ff775485246999027b3197955') tokenDecimals = 18;
-      return jsonResponse({ success: true, balance: parseFloat(d.result) / Math.pow(10, tokenDecimals) });
+      return jsonResponse({ success: true, balance: parseInt(balHex, 16) / Math.pow(10, tokenDecimals) });
     }
     return jsonResponse({ success: false, balance: 0 });
   }
@@ -157,12 +162,6 @@ async function handleRequest(req, url, path, store) {
   // Gas price
   if (path === '/gas') {
     var chain = url.searchParams.get('chain');
-    var CHAIN_RPC = {
-      ethereum: 'https://eth.llamarpc.com', bnb: 'https://bsc-dataseed.binance.org',
-      polygon: 'https://polygon-rpc.com', arbitrum: 'https://arb1.arbitrum.io/rpc',
-      optimism: 'https://mainnet.optimism.io', avalanche: 'https://api.avax.network/ext/bc/C/rpc',
-      base: 'https://mainnet.base.org'
-    };
     var rpc = CHAIN_RPC[chain];
     if (!rpc) return jsonResponse({ error: 'Unsupported chain' }, 400);
     var resp = await fetch(rpc, {
